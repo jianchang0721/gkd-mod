@@ -3,7 +3,6 @@ package li.gkd.app.ui.style
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -58,9 +57,11 @@ class ColorMathTest {
     }
 
     @Test
-    fun outOfRangeInputIsClamped() {
+    fun outOfRangeInputIsNormalized() {
+        // 饱和度/明度钳制到 1, 色相按 360 环绕 (-30 -> 330)
         val argb = hsvToArgb(HsvColor(hue = -30f, saturation = 2f, value = 2f))
-        assertNotNull(argb)
-        assertEquals(0xFFFFFFFFL, argb and 0xFFFFFFFFL)
+        assertEquals(0xFFFF0080L, argb and 0xFFFFFFFFL)
+        // 负明度钳到 0 => 黑
+        assertEquals(0xFF000000L, hsvToArgb(HsvColor(hue = 200f, saturation = 1f, value = -1f)) and 0xFFFFFFFFL)
     }
 }
