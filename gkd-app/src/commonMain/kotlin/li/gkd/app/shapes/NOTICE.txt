@@ -1,0 +1,6 @@
+本目录的连续曲率圆角实现来自 Kyant0/Shapes (https://github.com/Kyant0/Shapes),
+许可证 Apache License 2.0, 原始包名为 com.kyant.shapes.
+
+内联原因: MaterialTheme.shapes 需要 CornerBasedShape, 而上游库只实现 Compose Shape,
+且其曲率数学为 internal, 无法从外部调用. 这里仅改名包名 (li.gkd.app.shapes), 逻辑未改动,
+以便 GKD 把连续曲率圆角用作 Material 形状.
