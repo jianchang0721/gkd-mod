@@ -13,6 +13,8 @@ on:
 
 jobs:
   build-android:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -60,4 +62,23 @@ jobs:
         with:
           name: ${{ steps.outputs-artifact.outputs.name }}
           path: gkd-android/build/outputs
+
+      # 把 APK 推到 dist 分支: 无需任何凭据即可下载 (公开仓库)
+      - name: publish apk to dist branch
+        shell: bash
+        run: |
+          set -e
+          apk_files=(gkd-android/build/outputs/apk/gkd/release/*.apk)
+          [[ ${#apk_files[@]} -eq 1 && -f "${apk_files[0]}" ]]
+          apk="${apk_files[0]}"
+          mkdir -p /tmp/dist
+          cp "$apk" "/tmp/dist/$(basename "$apk")"
+          printf '%s\n' "${{ github.sha }}" > /tmp/dist/COMMIT.txt
+          cd /tmp/dist
+          git init -q -b dist
+          git config user.name "gkd-mod-ci"
+          git config user.email "gkd-mod-ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "apk: $(basename "$apk") @ ${{ github.sha }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" dist
 
