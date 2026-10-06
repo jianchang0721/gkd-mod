@@ -70,6 +70,7 @@ kotlin {
             api(libs.cmp.icons)
             api(libs.morph.compose)
             api(libs.priv.kit.ui)
+            api(libs.kyant.shapes)
             api(libs.json5)
             api(libs.kotlinx.serialization.json)
         }
@@ -79,6 +80,7 @@ kotlin {
             api(libs.compose.activity)
             api(libs.rikka.shizuku.api)
             api(libs.lsposed.hiddenapibypass)
+            api(project(":m3color"))
             api(libs.google.accompanist.drawablepainter)
             api(libs.androidx.splashscreen)
             api(libs.coil.gif)

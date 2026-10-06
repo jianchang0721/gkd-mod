@@ -19,6 +19,7 @@ plugins {
 
 rootProject.name = "gkd"
 include(
+    ":m3color",
     ":gkd-android",
     ":gkd-aidl",
     ":gkd-app",

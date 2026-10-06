@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -12,9 +13,15 @@ import androidx.compose.ui.graphics.Color
 fun GkTheme(
     colorScheme: ColorScheme,
     typography: Typography = Typography(),
+    shapes: Shapes = Shapes(),
     content: @Composable () -> Unit
 ) {
-    MaterialTheme(colorScheme = colorScheme.animation(), typography = typography, content = content)
+    MaterialTheme(
+        colorScheme = colorScheme.animation(),
+        typography = typography,
+        shapes = shapes,
+        content = content,
+    )
 }
 
 @Composable

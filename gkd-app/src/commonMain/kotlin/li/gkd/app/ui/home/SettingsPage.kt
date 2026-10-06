@@ -36,7 +36,13 @@ import li.gkd.app.resources.partial_disable_setup_open
 import li.gkd.app.resources.privilege_service_disconnected
 import li.gkd.app.resources.service_partial_disable
 import li.gkd.app.resources.service_partial_disable_description
+import li.gkd.app.resources.m3_color_primary
 import li.gkd.app.resources.settings_appearance
+import li.gkd.app.resources.ui_style_m3color
+import li.gkd.app.resources.ui_style_m3color_desc
+import li.gkd.app.resources.ui_style_section
+import li.gkd.app.resources.ui_style_shapes
+import li.gkd.app.resources.ui_style_shapes_desc
 import li.gkd.app.resources.settings_general
 import li.gkd.app.resources.settings_other
 import li.gkd.app.resources.theme_mode
@@ -64,7 +70,10 @@ import li.gkd.app.ui.navigation.BlockA11ySetupRoute
 import li.gkd.app.ui.navigation.NotificationTextRoute
 import li.gkd.app.ui.navigation.dynamicColorAvailable
 import li.gkd.app.ui.navigation.launchUi
+import li.gkd.app.ui.component.M3ColorPickerDialog
 import li.gkd.app.ui.option.DarkThemeOption
+import li.gkd.app.ui.style.UiStyle
+import li.gkd.app.ui.style.formatHexColor
 import li.gkd.app.ui.option.findOption
 import li.gkd.app.ui.page.GkBackupDialogs
 import li.gkd.app.ui.settings.appVersion
@@ -85,6 +94,7 @@ fun settingsPage(
     val store by SettingsRepository.settings.collectAsStateWithLifecycle()
     val privilegeAvailable = window.privilegeAvailable()
     var showBackup by rememberSaveable { mutableStateOf(false) }
+    var showM3Color by rememberSaveable { mutableStateOf(false) }
     GkBackupDialogs(
         showBackup,
         { showBackup = false },
@@ -250,6 +260,60 @@ fun settingsPage(
                         checked = store.enableDynamicColor,
                         onCheckedChange = {
                             SettingsRepository.updateSettings { store -> store.copy(enableDynamicColor = it) }
+                        },
+                    )
+                }
+
+                Text(
+                    text = stringResource(Res.string.ui_style_section),
+                    modifier = Modifier.titleItemPadding(),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+
+                val uiStyle = UiStyle.fromValue(store.uiStyle)
+                fun setUiStyle(style: UiStyle) {
+                    SettingsRepository.updateSettings { it.copy(uiStyle = style.value) }
+                }
+
+                GkTextSwitch(
+                    title = stringResource(Res.string.ui_style_shapes),
+                    subtitle = stringResource(Res.string.ui_style_shapes_desc),
+                    checked = uiStyle == UiStyle.Shapes,
+                    onCheckedChange = { on ->
+                        setUiStyle(if (on) UiStyle.Shapes else UiStyle.Default)
+                    },
+                )
+                GkTextSwitch(
+                    title = stringResource(Res.string.ui_style_m3color),
+                    subtitle = stringResource(Res.string.ui_style_m3color_desc),
+                    checked = uiStyle == UiStyle.M3Color,
+                    onCheckedChange = { on ->
+                        setUiStyle(if (on) UiStyle.M3Color else UiStyle.Default)
+                    },
+                )
+                AnimatedVisibility(visible = uiStyle == UiStyle.M3Color) {
+                    GkSettingItem(
+                        title = stringResource(Res.string.m3_color_primary),
+                        subtitle = formatHexColor(store.m3ColorSeed),
+                        onClick = { showM3Color = true },
+                    )
+                }
+                if (showM3Color) {
+                    M3ColorPickerDialog(
+                        seedArgb = store.m3ColorSeed,
+                        variant = li.gkd.app.ui.style.PaletteStyleOption.fromValue(store.m3ColorVariant),
+                        contrastLevel = store.m3ColorContrast,
+                        onDismiss = { showM3Color = false },
+                        onConfirm = { seed, variant, contrast ->
+                            SettingsRepository.updateSettings {
+                                it.copy(
+                                    m3ColorSeed = seed,
+                                    m3ColorVariant = variant.value,
+                                    m3ColorContrast = contrast,
+                                )
+                            }
+                            showM3Color = false
                         },
                     )
                 }

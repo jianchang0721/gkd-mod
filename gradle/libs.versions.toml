@@ -10,6 +10,8 @@ jna = "5.19.1"
 kotlin = "2.4.20"
 ksp = "2.3.12"
 ktor = "3.6.0"
+kyant-backdrop = "2.0.1"
+kyant-shapes = "1.2.1"
 lifecycle = "2.11.0"
 nav3 = "1.2.0"
 paging = "3.5.1"
@@ -76,6 +78,8 @@ ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 lsposed-hiddenapibypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.1"
+kyant-backdrop = { module = "io.github.kyant0:backdrop", version.ref = "kyant-backdrop" }
+kyant-shapes = { module = "io.github.kyant0:shapes", version.ref = "kyant-shapes" }
 morph-compose = "li.songe.morph:morph-compose:0.4.0"
 kmp-lifecycle = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 kmp-navigation3 = "org.jetbrains.androidx.navigation3:navigation3-ui:1.1.2"

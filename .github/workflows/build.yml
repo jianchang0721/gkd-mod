@@ -30,7 +30,7 @@ jobs:
         run: echo ${{ secrets.GKD_STORE_FILE_BASE64 }} | base64 --decode > ${{ github.workspace }}/gkd.jks
 
       - name: run mod unit tests
-        run: ./gradlew :gkd-app:jvmTest --tests "li.gkd.app.root.*" --tests "li.gkd.app.ui.GkdLinkTest"
+        run: ./gradlew :gkd-app:jvmTest --tests "li.gkd.app.root.*" --tests "li.gkd.app.ui.style.*" --tests "li.gkd.app.ui.GkdLinkTest"
 
       - run: ./gradlew :gkd-android:assembleGkdRelease
         env:

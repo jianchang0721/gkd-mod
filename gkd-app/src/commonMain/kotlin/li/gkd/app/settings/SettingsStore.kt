@@ -5,6 +5,8 @@ import li.gkd.app.app.AppGroupFlags
 import li.gkd.app.app.AppSort
 import li.gkd.app.rule.RuleSort
 import li.gkd.app.snapshot.SnapshotDisplayMode
+import li.gkd.app.ui.style.PaletteStyleOption
+import li.gkd.app.ui.style.UiStyle
 
 @Serializable
 data class SettingsStore(
@@ -62,6 +64,13 @@ data class SettingsStore(
     val a11yGuardAutoRestore: Boolean = true,
     val a11yGuardRestartOnDead: Boolean = true,
     val a11yGuardRestoreOnBoot: Boolean = true,
+    // endregion
+
+    // region 界面风格 (互斥, 只影响呈现层)
+    val uiStyle: Int = UiStyle.Default.value,
+    val m3ColorSeed: Long = 0xFF6750A4L,
+    val m3ColorVariant: Int = PaletteStyleOption.TonalSpot.value,
+    val m3ColorContrast: Double = 0.0,
     // endregion
 ) {
     val useA11y get() = automatorMode == AutomatorMode.A11y.value

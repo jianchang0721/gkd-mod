@@ -5,6 +5,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -16,8 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.shapes.RoundedRectangle
 import androidx.core.view.WindowInsetsControllerCompat
 import li.gkd.app.app
+import li.gkd.app.settings.SettingsRepository
 import li.gkd.app.ui.share.LocalDarkTheme
 import li.gkd.app.ui.share.LocalIsTalkbackEnabled
 import li.gkd.app.ui.theme.GkTheme
@@ -35,11 +40,26 @@ fun AppTheme(
     val appearance by rememberAppearance()
     val darkTheme = appearance.isDark(isSystemInDarkTheme(), invertedTheme)
     val enableDynamicColor = appearance.dynamicColor
+    val store by SettingsRepository.settings.collectAsStateWithLifecycle()
+    val uiStyle = UiStyle.fromValue(store.uiStyle)
     val colorScheme = when {
+        // M3 动态配色: 由主色生成整套配色, 优先于系统动态取色
+        uiStyle == UiStyle.M3Color -> rememberM3ColorScheme(
+            seedArgb = store.m3ColorSeed,
+            dark = darkTheme,
+            variant = PaletteStyleOption.fromValue(store.m3ColorVariant),
+            contrastLevel = store.m3ColorContrast,
+        )
+
         AndroidTarget.S && enableDynamicColor && darkTheme -> dynamicDarkColorScheme(app)
         AndroidTarget.S && enableDynamicColor && !darkTheme -> dynamicLightColorScheme(app)
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+    val shapes = when (uiStyle) {
+        // 形状风格与液态玻璃都用连续曲率圆角
+        UiStyle.Shapes, UiStyle.LiquidGlass -> continuousCurvatureShapes
+        else -> Shapes()
     }
 
     val activity = LocalActivity.current
@@ -72,7 +92,18 @@ fun AppTheme(
     ) {
         GkTheme(
             colorScheme = colorScheme,
+            shapes = shapes,
             content = content,
         )
     }
 }
+
+/** iOS 风格连续曲率圆角 (com.kyant.shapes), 替换 Material 的默认圆角. */
+private val continuousCurvatureShapes
+    get() = Shapes(
+        extraSmall = RoundedRectangle(6.dp),
+        small = RoundedRectangle(10.dp),
+        medium = RoundedRectangle(14.dp),
+        large = RoundedRectangle(20.dp),
+        extraLarge = RoundedRectangle(28.dp),
+    )
