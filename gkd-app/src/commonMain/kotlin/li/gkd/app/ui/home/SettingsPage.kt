@@ -39,6 +39,8 @@ import li.gkd.app.resources.service_partial_disable_description
 import li.gkd.app.resources.m3_color_primary
 import li.gkd.app.resources.settings_appearance
 import li.gkd.app.resources.ui_style_m3color
+import li.gkd.app.resources.ui_style_liquidglass
+import li.gkd.app.resources.ui_style_liquidglass_desc
 import li.gkd.app.resources.ui_style_m3color_desc
 import li.gkd.app.resources.ui_style_section
 import li.gkd.app.resources.ui_style_shapes
@@ -290,6 +292,14 @@ fun settingsPage(
                     checked = uiStyle == UiStyle.M3Color,
                     onCheckedChange = { on ->
                         setUiStyle(if (on) UiStyle.M3Color else UiStyle.Default)
+                    },
+                )
+                GkTextSwitch(
+                    title = stringResource(Res.string.ui_style_liquidglass),
+                    subtitle = stringResource(Res.string.ui_style_liquidglass_desc),
+                    checked = uiStyle == UiStyle.LiquidGlass,
+                    onCheckedChange = { on ->
+                        setUiStyle(if (on) UiStyle.LiquidGlass else UiStyle.Default)
                     },
                 )
                 AnimatedVisibility(visible = uiStyle == UiStyle.M3Color) {

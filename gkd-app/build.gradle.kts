@@ -71,6 +71,7 @@ kotlin {
             api(libs.morph.compose)
             api(libs.priv.kit.ui)
             api(libs.kyant.shapes)
+            api(libs.kyant.backdrop)
             api(libs.json5)
             api(libs.kotlinx.serialization.json)
         }

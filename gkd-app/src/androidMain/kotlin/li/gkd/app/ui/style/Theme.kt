@@ -23,6 +23,8 @@ import com.kyant.shapes.RoundedRectangle
 import androidx.core.view.WindowInsetsControllerCompat
 import li.gkd.app.app
 import li.gkd.app.settings.SettingsRepository
+import li.gkd.app.ui.glass.GkGlassRoot
+import li.gkd.app.ui.glass.glassColorScheme
 import li.gkd.app.ui.share.LocalDarkTheme
 import li.gkd.app.ui.share.LocalIsTalkbackEnabled
 import li.gkd.app.ui.theme.GkTheme
@@ -56,6 +58,8 @@ fun AppTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    val styledColorScheme =
+        if (uiStyle == UiStyle.LiquidGlass) glassColorScheme(colorScheme) else colorScheme
     val shapes = when (uiStyle) {
         // 形状风格与液态玻璃都用连续曲率圆角
         UiStyle.Shapes, UiStyle.LiquidGlass -> continuousCurvatureShapes
@@ -91,10 +95,13 @@ fun AppTheme(
         LocalIsTalkbackEnabled provides isTalkbackEnabled
     ) {
         GkTheme(
-            colorScheme = colorScheme,
+            colorScheme = styledColorScheme,
             shapes = shapes,
-            content = content,
-        )
+        ) {
+            GkGlassRoot(style = uiStyle) {
+                content()
+            }
+        }
     }
 }
 

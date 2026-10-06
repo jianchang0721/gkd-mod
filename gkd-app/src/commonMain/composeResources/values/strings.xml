@@ -1084,6 +1084,8 @@
     <string name="ui_style_shapes_desc">iOS 风格连续曲率圆角 (com.kyant.shapes)</string>
     <string name="ui_style_m3color">M3 动态配色</string>
     <string name="ui_style_m3color_desc">用主色生成整套 Material 3 配色 (m3color)</string>
+    <string name="ui_style_liquidglass">液态玻璃</string>
+    <string name="ui_style_liquidglass_desc">模糊玻璃材质 + 环境渐变背景 (backdrop)</string>
     <string name="m3_color_primary">主色与配色方案</string>
     <string name="m3_color_hue">色相</string>
     <string name="m3_color_saturation">饱和度</string>

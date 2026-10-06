@@ -6,6 +6,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.unit.dp
+import li.gkd.app.ui.glass.LocalUiStyle
+import li.gkd.app.ui.glass.gkGlassSurface
+import li.gkd.app.ui.style.UiStyle
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -40,15 +46,38 @@ fun GkTopAppBar(
     }
     // SingleRowTopAppBar 内部 containerColor+scrolledContainerColor 合成了一个动画
     // 应用主题颜色更新时形成叠加动画，导致和周围正常组件视觉变换效果表现割裂
+    // 玻璃风格: 顶栏自己画模糊玻璃, 内部容器色设为透明
+    val glassMode = LocalUiStyle.current == UiStyle.LiquidGlass
+    val actualColors = if (glassMode) {
+        TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+            titleContentColor = colors.titleContentColor,
+            navigationIconContentColor = colors.navigationIconContentColor,
+            actionIconContentColor = colors.actionIconContentColor,
+        )
+    } else {
+        colors
+    }
+    val actualModifier = if (glassMode) {
+        modifier.gkGlassSurface(
+            shape = RectangleShape,
+            fallbackColor = MaterialTheme.colorScheme.surface,
+            blurRadius = 24.dp,
+            tintAlpha = 0.2f,
+        )
+    } else {
+        modifier
+    }
     key(MaterialTheme.colorScheme.primary) {
         TopAppBar(
             title = title,
-            modifier = modifier,
+            modifier = actualModifier,
             navigationIcon = navigationIcon,
             actions = actions,
             expandedHeight = expandedHeight,
             windowInsets = LocalTopBarWindowInsets.current ?: TopAppBarDefaults.windowInsets,
-            colors = colors,
+            colors = actualColors,
             scrollBehavior = actualScrollBehavior,
         )
     }

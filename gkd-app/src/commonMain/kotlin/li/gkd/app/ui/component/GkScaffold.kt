@@ -10,6 +10,8 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import li.gkd.app.ui.glass.LocalUiStyle
+import li.gkd.app.ui.style.UiStyle
 
 /** Native Scaffold on Android; the development window supplies equivalent safe insets. */
 @Composable
@@ -24,8 +26,12 @@ fun GkScaffold(
         ?: ScaffoldDefaults.contentWindowInsets,
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    // 玻璃风格下让页面容器透明, 露出顶层的环境渐变层
+    val glassMode = LocalUiStyle.current == UiStyle.LiquidGlass
     Scaffold(
         modifier, topBar, bottomBar, snackbarHost, floatingActionButton,
-        floatingActionButtonPosition, containerColor, contentColor, contentWindowInsets, content
+        floatingActionButtonPosition,
+        if (glassMode) Color.Transparent else containerColor,
+        contentColor, contentWindowInsets, content
     )
 }
