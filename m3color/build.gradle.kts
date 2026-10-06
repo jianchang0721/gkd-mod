@@ -7,9 +7,10 @@ plugins {
 group = "com.kyant"
 version = "2026.1"
 
+// 上游源码使用 Java 14+ 的 switch 表达式/规则, 所以不能压到 11
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 dependencies {
