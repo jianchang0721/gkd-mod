@@ -48,6 +48,7 @@ import li.gkd.app.platform.lifecycle.RuntimeStateSynchronizer
 import li.gkd.app.priv.PrivilegeOwnerLifecycle
 import li.gkd.app.priv.gkdPrivilegeUiConfig
 import li.gkd.app.priv.initPrivilege
+import li.gkd.app.root.A11yGuard
 import li.gkd.app.service.ExposeService
 import li.gkd.app.service.clearHttpSubs
 import li.gkd.app.service.initA11yWhiteAppList
@@ -286,6 +287,7 @@ class App : Application() {
         PackageAppCatalog.initialize()
         initA11yFeat()
         initPrivilege()
+        A11yGuard.start()
         appScope.launchLogged(Dispatchers.IO) {
             PrivilegeUi.startSilently(gkdPrivilegeUiConfig)
         }

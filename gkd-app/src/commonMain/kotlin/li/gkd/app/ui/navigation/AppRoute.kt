@@ -42,6 +42,11 @@ data class ImagePreviewRoute(
 @SerialName("li.gkd.app.ui.PrivilegeServiceRoute")
 data object PrivilegeServiceRoute : AppRoute
 
+/** Root 辅助 / 无障碍保障页面. */
+@Serializable
+@SerialName("li.gkd.app.ui.RootAssistRoute")
+data object RootAssistRoute : AppRoute
+
 @Serializable
 @SerialName("li.gkd.app.ui.WebViewRoute")
 data class WebViewRoute(val initUrl: String) : AppRoute

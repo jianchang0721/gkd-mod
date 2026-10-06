@@ -84,3 +84,5 @@ actual fun AppWindow.requestQueryPackages() {
 }
 
 actual fun AppWindow.dynamicColorAvailable() = li.gkd.app.util.AndroidTarget.S
+
+actual fun AppWindow.rootAssistAvailable() = true

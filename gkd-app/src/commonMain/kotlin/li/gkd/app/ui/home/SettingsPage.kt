@@ -17,6 +17,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import li.gkd.app.resources.Res
+import li.gkd.app.resources.a11y_guard
+import li.gkd.app.resources.a11y_guard_description
 import li.gkd.app.resources.a11y_label
 import li.gkd.app.resources.a11y_whitelist_open
 import li.gkd.app.resources.about_title
@@ -53,7 +55,9 @@ import li.gkd.app.ui.navigation.AboutRoute
 import li.gkd.app.ui.navigation.ActionToastRoute
 import li.gkd.app.ui.navigation.AdvancedPageRoute
 import li.gkd.app.ui.navigation.AppRoute
+import li.gkd.app.ui.navigation.RootAssistRoute
 import li.gkd.app.ui.navigation.privilegeAvailable
+import li.gkd.app.ui.navigation.rootAssistAvailable
 import li.gkd.app.ui.navigation.AppWindow
 import li.gkd.app.ui.navigation.BlockA11yAppListRoute
 import li.gkd.app.ui.navigation.BlockA11ySetupRoute
@@ -205,6 +209,22 @@ fun settingsPage(
                         onClickLabel = stringResource(Res.string.a11y_whitelist_open),
                         onClick = {
                             onNavigate(BlockA11yAppListRoute)
+                        },
+                    )
+                }
+
+                if (window.rootAssistAvailable()) {
+                    Text(
+                        text = stringResource(Res.string.a11y_guard),
+                        modifier = Modifier.titleItemPadding(),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    GkSettingItem(
+                        title = stringResource(Res.string.a11y_guard),
+                        subtitle = stringResource(Res.string.a11y_guard_description),
+                        onClick = {
+                            onNavigate(RootAssistRoute)
                         },
                     )
                 }

@@ -29,6 +29,9 @@ jobs:
       - name: write gkd keystore
         run: echo ${{ secrets.GKD_STORE_FILE_BASE64 }} | base64 --decode > ${{ github.workspace }}/gkd.jks
 
+      - name: run mod unit tests
+        run: ./gradlew :gkd-app:jvmTest --tests "li.gkd.app.root.*" --tests "li.gkd.app.ui.GkdLinkTest"
+
       - run: ./gradlew :gkd-android:assembleGkdRelease
         env:
           GKD_GITHUB_COOKIE: ${{ secrets.GKD_GITHUB_COOKIE }}
@@ -58,28 +61,3 @@ jobs:
           name: ${{ steps.outputs-artifact.outputs.name }}
           path: gkd-android/build/outputs
 
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-java@v6
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-encryption-key: ${{ secrets.GRADLE_CACHE_ENCRYPTION_KEY }}
-
-      - name: build Windows portable package
-        run: ./gradlew.bat :gkd-app:packageWindowsPortable
-        env:
-          GKD_RENAME_PACKAGE_FLAG: "1"
-
-      - uses: actions/upload-artifact@v7
-        with:
-          archive: false
-          include-hidden-files: true
-          if-no-files-found: error
-          path: .local/desktop-packages/gkd-v*.win-*.zip

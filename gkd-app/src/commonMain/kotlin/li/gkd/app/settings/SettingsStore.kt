@@ -55,6 +55,14 @@ data class SettingsStore(
     val subsExcludeAppGroupType: Int = appGroupType,
     val showDisabledRule: Boolean = true,
     val snapshotDisplayMode: Int = SnapshotDisplayMode.ByTime.value,
+
+    // region 无障碍保障 (Root 辅助)
+    // 只用特权服务(Root/ADB/Shizuku)开关无障碍服务, 不参与点击注入.
+    val a11yGuardEnabled: Boolean = false,
+    val a11yGuardAutoRestore: Boolean = true,
+    val a11yGuardRestartOnDead: Boolean = true,
+    val a11yGuardRestoreOnBoot: Boolean = true,
+    // endregion
 ) {
     val useA11y get() = automatorMode == AutomatorMode.A11y.value
     val useAutomation get() = automatorMode == AutomatorMode.Automation.value

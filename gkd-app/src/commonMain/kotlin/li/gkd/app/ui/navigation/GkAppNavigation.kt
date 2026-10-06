@@ -312,6 +312,7 @@ fun GkAppNavigation(
                         )
 
                         PrivilegeServiceRoute -> li.gkd.app.ui.PrivilegeServicePage(window)
+                        RootAssistRoute -> li.gkd.app.ui.root.RootAssistPage(window)
                         SnapshotSettingsRoute -> li.gkd.app.ui.snapshot.SnapshotSettingsPage(
                             window,
                             onBack,

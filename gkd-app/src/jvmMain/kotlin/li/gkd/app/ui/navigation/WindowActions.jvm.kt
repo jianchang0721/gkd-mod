@@ -50,3 +50,5 @@ actual fun AppWindow.requestQueryPackages() {
 }
 
 actual fun AppWindow.dynamicColorAvailable() = true
+
+actual fun AppWindow.rootAssistAvailable() = false
