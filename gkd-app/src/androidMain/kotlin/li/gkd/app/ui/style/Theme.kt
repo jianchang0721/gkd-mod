@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kyant.shapes.RoundedRectangle
 import androidx.core.view.WindowInsetsControllerCompat
 import li.gkd.app.app
 import li.gkd.app.settings.SettingsRepository
@@ -62,7 +61,7 @@ fun AppTheme(
         if (uiStyle == UiStyle.LiquidGlass) glassColorScheme(colorScheme) else colorScheme
     val shapes = when (uiStyle) {
         // 形状风格与液态玻璃都用连续曲率圆角
-        UiStyle.Shapes, UiStyle.LiquidGlass -> continuousCurvatureShapes
+        UiStyle.Shapes, UiStyle.LiquidGlass -> continuousCurvatureShapes()
         else -> Shapes()
     }
 
@@ -104,13 +103,3 @@ fun AppTheme(
         }
     }
 }
-
-/** iOS 风格连续曲率圆角 (com.kyant.shapes), 替换 Material 的默认圆角. */
-private val continuousCurvatureShapes
-    get() = Shapes(
-        extraSmall = RoundedRectangle(6.dp),
-        small = RoundedRectangle(10.dp),
-        medium = RoundedRectangle(14.dp),
-        large = RoundedRectangle(20.dp),
-        extraLarge = RoundedRectangle(28.dp),
-    )
