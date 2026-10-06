@@ -1,10 +1,16 @@
 package li.gkd.app.ui.home
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,16 +35,26 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import li.gkd.app.shapes.Capsule
 import li.gkd.app.ui.component.GkIcon
+import li.gkd.app.ui.glass.GkGlassLayer
+import li.gkd.app.ui.glass.LocalGkLiveRefraction
 import li.gkd.app.ui.glass.LocalUiStyle
 import li.gkd.app.ui.glass.gkGlassSurface
 import li.gkd.app.ui.style.UiStyle
@@ -46,13 +62,19 @@ import li.gkd.app.ui.style.UiStyle
 private val CapsuleHeight = 64.dp
 private val IndicatorInset = 6.dp
 
+/** 气泡"游走"的速度参考值 (px/s), 用于把速度映射成拉伸程度. */
+private const val BubbleSpeedReference = 3200f
+
 /**
- * 悬浮胶囊底栏.
+ * 悬浮胶囊底栏 + 气泡游走动效.
  *
- * 参考样式: 白色悬浮胶囊容器 + 选中项背后的动画胶囊指示器 + 图标+文字页签.
- * - 玻璃风格下容器与指示器都是模糊玻璃 (折射顶层环境渐变层)
- * - 其它风格下是带投影的实体胶囊
- * - 无障碍: 页签使用 selectable + Role.Tab, 并保留图标与文字的语义
+ * 动效思路 (气泡在水柱中游走):
+ * - 指示器位置用低阻尼弹簧跟随 -> 有"水阻"般的过冲与回弹
+ * - 由实时速度驱动拉伸 (沿运动方向拉长、垂直方向压扁), 速度越快越像被水拖长
+ * - 气泡持续做极轻微的上下浮动, 静止时也像悬在水中
+ * - 气泡身后跟一条随速度出现的拉伸光晕, 形成"水痕"拖尾
+ *
+ * 玻璃风格下容器与气泡都是模糊玻璃, 且可折射页面真实内容 (实时折射开启时).
  */
 @Composable
 fun GkFloatingCapsuleNav(
@@ -64,8 +86,11 @@ fun GkFloatingCapsuleNav(
     val selectedIndex = items.indexOf(selectedTab).coerceAtLeast(0)
     val scheme = MaterialTheme.colorScheme
     val glassMode = LocalUiStyle.current == UiStyle.LiquidGlass
+    val liveRefraction = LocalGkLiveRefraction.current
+    val refractionLayer = if (liveRefraction) GkGlassLayer.Content else GkGlassLayer.Ambient
     val containerShape = Capsule()
     val indicatorShape = Capsule()
+    val density = LocalDensity.current
 
     Box(
         modifier = modifier
@@ -82,14 +107,40 @@ fun GkFloatingCapsuleNav(
                 .height(CapsuleHeight),
         ) {
             val itemWidth = maxWidth / items.size
-            val indicatorOffset by animateDpAsState(
-                targetValue = itemWidth * selectedIndex + IndicatorInset,
-                animationSpec = spring(
-                    dampingRatio = 0.78f,
-                    stiffness = Spring.StiffnessMediumLow,
+            val bubbleWidth = itemWidth - IndicatorInset * 2
+            val targetOffset = with(LocalDensity.current) {
+                (itemWidth * selectedIndex).toPx()
+            }
+            val insetPx = with(LocalDensity.current) {
+                IndicatorInset.toPx()
+            }
+            val bubbleOffset = remember { Animatable(0f) }
+            var positioned by remember { mutableStateOf(false) }
+            LaunchedEffect(targetOffset) {
+                if (!positioned) {
+                    positioned = true
+                    bubbleOffset.snapTo(targetOffset)
+                } else {
+                    bubbleOffset.animateTo(
+                        targetValue = targetOffset,
+                        animationSpec = spring(
+                            dampingRatio = 0.55f,
+                            stiffness = Spring.StiffnessMediumLow,
+                        ),
+                    )
+                }
+            }
+            val bob by rememberInfiniteTransition(label = "gk-bubble").animateFloat(
+                initialValue = -1f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 2800, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse,
                 ),
-                label = "gk-nav-indicator",
+                label = "gk-bubble-bob",
             )
+            val bobPx = with(LocalDensity.current) { 1.5.dp.toPx() }
+
             // 悬浮胶囊容器
             Box(
                 modifier = Modifier
@@ -99,6 +150,7 @@ fun GkFloatingCapsuleNav(
                             Modifier.gkGlassSurface(
                                 shape = containerShape,
                                 fallbackColor = scheme.surfaceContainer,
+                                layer = refractionLayer,
                                 blurRadius = 26.dp,
                                 tintAlpha = 0.22f,
                             )
@@ -110,20 +162,48 @@ fun GkFloatingCapsuleNav(
                         },
                     ),
             )
-            // 选中指示胶囊
+
+            // 水痕拖尾: 速度越大越明显, 越被拉长
             Box(
                 modifier = Modifier
-                    .offset(x = indicatorOffset)
+                    .offset { IntOffset((bubbleOffset.value + insetPx).roundToInt(), 0) }
                     .padding(vertical = IndicatorInset)
-                    .width(itemWidth - IndicatorInset * 2)
+                    .width(bubbleWidth)
                     .fillMaxHeight()
+                    .graphicsLayer {
+                        val stretch = (abs(bubbleOffset.velocity) / BubbleSpeedReference)
+                            .coerceIn(0f, 1f)
+                        alpha = 0.5f * stretch
+                        scaleX = 1f + stretch * 0.55f
+                        scaleY = 1f - stretch * 0.25f
+                        translationY = bob * bobPx
+                    }
+                    .clip(indicatorShape)
+                    .background(scheme.primary.copy(alpha = 0.45f)),
+            )
+
+            // 气泡本身: 速度驱动拉伸 + 悬浮浮动
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset((bubbleOffset.value + insetPx).roundToInt(), 0) }
+                    .padding(vertical = IndicatorInset)
+                    .width(bubbleWidth)
+                    .fillMaxHeight()
+                    .graphicsLayer {
+                        val stretch = (abs(bubbleOffset.velocity) / BubbleSpeedReference)
+                            .coerceIn(0f, 1f)
+                        scaleX = 1f + stretch * 0.22f
+                        scaleY = 1f - stretch * 0.16f
+                        translationY = bob * bobPx
+                    }
                     .then(
                         if (glassMode) {
                             Modifier.gkGlassSurface(
                                 shape = indicatorShape,
                                 fallbackColor = scheme.secondaryContainer,
+                                layer = refractionLayer,
                                 blurRadius = 12.dp,
-                                tintAlpha = 0.55f,
+                                tintAlpha = 0.5f,
                             )
                         } else {
                             Modifier
@@ -132,6 +212,7 @@ fun GkFloatingCapsuleNav(
                         },
                     ),
             )
+
             Row(
                 modifier = Modifier
                     .fillMaxSize()

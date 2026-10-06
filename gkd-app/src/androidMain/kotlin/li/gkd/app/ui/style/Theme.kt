@@ -97,7 +97,12 @@ fun AppTheme(
             colorScheme = styledColorScheme,
             shapes = shapes,
         ) {
-            GkGlassRoot(style = uiStyle) {
+            GkGlassRoot(
+                style = uiStyle,
+                blurScale = store.glassBlurScale,
+                liveRefraction = store.glassLiveRefraction,
+                immersiveTopBar = store.immersiveTopBar,
+            ) {
                 content()
             }
         }

@@ -4,6 +4,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Slider
+import kotlin.math.roundToInt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +41,11 @@ import li.gkd.app.resources.partial_disable_setup_open
 import li.gkd.app.resources.privilege_service_disconnected
 import li.gkd.app.resources.service_partial_disable
 import li.gkd.app.resources.service_partial_disable_description
+import li.gkd.app.resources.glass_live_refraction
+import li.gkd.app.resources.glass_live_refraction_desc
+import li.gkd.app.resources.glass_blur_strength
+import li.gkd.app.resources.immersive_top_bar
+import li.gkd.app.resources.immersive_top_bar_desc
 import li.gkd.app.resources.m3_color_primary
 import li.gkd.app.resources.settings_appearance
 import li.gkd.app.resources.ui_style_m3color
@@ -302,6 +312,49 @@ fun settingsPage(
                         setUiStyle(if (on) UiStyle.LiquidGlass else UiStyle.Default)
                     },
                 )
+                AnimatedVisibility(visible = uiStyle == UiStyle.LiquidGlass) {
+                    Column {
+                        GkTextSwitch(
+                            title = stringResource(Res.string.glass_live_refraction),
+                            subtitle = stringResource(Res.string.glass_live_refraction_desc),
+                            checked = store.glassLiveRefraction,
+                            onCheckedChange = { on ->
+                                SettingsRepository.updateSettings { it.copy(glassLiveRefraction = on) }
+                            },
+                        )
+                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.glass_blur_strength),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                Text(
+                                    text = blurScaleLabel(store.glassBlurScale),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Slider(
+                                value = store.glassBlurScale,
+                                valueRange = 0.5f..2f,
+                                onValueChange = { value ->
+                                    SettingsRepository.updateSettings { it.copy(glassBlurScale = value) }
+                                },
+                            )
+                        }
+                    }
+                }
+                GkTextSwitch(
+                    title = stringResource(Res.string.immersive_top_bar),
+                    subtitle = stringResource(Res.string.immersive_top_bar_desc),
+                    checked = store.immersiveTopBar,
+                    onCheckedChange = { on ->
+                        SettingsRepository.updateSettings { it.copy(immersiveTopBar = on) }
+                    },
+                )
                 AnimatedVisibility(visible = uiStyle == UiStyle.M3Color) {
                     GkSettingItem(
                         title = stringResource(Res.string.m3_color_primary),
@@ -360,3 +413,6 @@ fun settingsPage(
         },
     )
 }
+
+/** 模糊系数显示成 1.0x 这样的形式. */
+private fun blurScaleLabel(scale: Float): String = ((scale * 10f).roundToInt() / 10f).toString() + "x"

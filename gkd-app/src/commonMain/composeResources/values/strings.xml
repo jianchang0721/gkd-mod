@@ -1086,6 +1086,11 @@
     <string name="ui_style_m3color_desc">用主色生成整套 Material 3 配色 (m3color)</string>
     <string name="ui_style_liquidglass">液态玻璃</string>
     <string name="ui_style_liquidglass_desc">模糊玻璃材质 + 环境渐变背景 (backdrop)</string>
+    <string name="glass_live_refraction">玻璃实时折射</string>
+    <string name="glass_live_refraction_desc">顶栏与底栏折射滚动中的真实内容</string>
+    <string name="glass_blur_strength">玻璃模糊强度</string>
+    <string name="immersive_top_bar">顶栏沉浸</string>
+    <string name="immersive_top_bar_desc">顶栏透明, 与内容之间不出现分割线</string>
     <string name="m3_color_primary">主色与配色方案</string>
     <string name="m3_color_hue">色相</string>
     <string name="m3_color_saturation">饱和度</string>

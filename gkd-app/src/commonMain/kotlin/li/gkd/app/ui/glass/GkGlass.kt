@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -39,30 +40,65 @@ val LocalUiStyle = staticCompositionLocalOf { UiStyle.Default }
 /** 环境背景层: 装饰渐变, 供所有玻璃表面折射. */
 val LocalGkAmbientBackdrop = staticCompositionLocalOf<LayerBackdrop?> { null }
 
+/** 页面内容层: GkScaffold 录制的滚动内容, 供顶栏/底栏做实时折射. */
+val LocalGkContentBackdrop = staticCompositionLocalOf<LayerBackdrop?> { null }
+
+/** 全局模糊强度系数 (0.5x ~ 2x), 由设置注入. */
+val LocalGkBlurScale = staticCompositionLocalOf { 1f }
+
+/** 是否开启实时内容折射. */
+val LocalGkLiveRefraction = staticCompositionLocalOf { false }
+
+/** 顶栏是否沉浸 (透明 + 无分割线). */
+val LocalGkImmersiveTopBar = staticCompositionLocalOf { true }
+
+/** 玻璃表面折射哪一层. */
+enum class GkGlassLayer {
+    /** 环境渐变 (顶层光斑), 任何位置都安全, 不会自折射. */
+    Ambient,
+
+    /** 页面真实内容; 只给「内容层之外」的表面用 (顶栏/底栏), 否则会自我折射. */
+    Content,
+}
+
+@Composable
+private fun resolveBackdrop(layer: GkGlassLayer): LayerBackdrop? {
+    val ambient = LocalGkAmbientBackdrop.current
+    val content = LocalGkContentBackdrop.current
+    return when (layer) {
+        GkGlassLayer.Ambient -> ambient ?: content
+        GkGlassLayer.Content -> content ?: ambient
+    }
+}
+
 /**
  * 玻璃风格下用模糊+高光绘制表面, 其它情况退回普通背景色.
  *
+ * @param layer 折射哪一层; 顶栏/底栏用 Content 以折射滚动内容, 卡片用 Ambient
  * @param fallbackColor 非玻璃风格 (或设备不支持渲染效果) 时使用的背景色
- * @param blurRadius 模糊半径; 越大越"厚"
+ * @param blurRadius 模糊半径基准值, 实际值还会乘以全局模糊系数
  * @param tintAlpha 玻璃表面上的色调透明度, 0 表示完全透明只留模糊
+ * @param highlight 是否绘制玻璃高光边; 顶栏沉浸时会关掉, 避免出现"分割线"
  */
 @Composable
 fun Modifier.gkGlassSurface(
     shape: Shape,
     fallbackColor: Color,
+    layer: GkGlassLayer = GkGlassLayer.Ambient,
     blurRadius: Dp = 18.dp,
     tintAlpha: Float = 0.25f,
     highlight: Boolean = true,
 ): Modifier {
     val style = LocalUiStyle.current
-    val backdrop = LocalGkAmbientBackdrop.current
+    val backdrop = resolveBackdrop(layer)
+    val blurScale = LocalGkBlurScale.current
     // Android 12 以下没有 RenderEffect, backdrop 的 blur 会静默失效; 此时退回不透明背景保证可读性
     if (style != UiStyle.LiquidGlass || backdrop == null || !isRenderEffectSupported()) {
         val color =
             if (style == UiStyle.LiquidGlass) fallbackColor.copy(alpha = 0.94f) else fallbackColor
         return this.clip(shape).background(color)
     }
-    val blurPx = with(LocalDensity.current) { blurRadius.toPx() }
+    val blurPx = with(LocalDensity.current) { (blurRadius * blurScale).toPx() }
     return this.drawBackdrop(
         backdrop = backdrop,
         shape = { shape },
@@ -78,41 +114,67 @@ fun Modifier.gkGlassSurface(
 }
 
 /**
+ * 顶栏沉浸用的柔和遮罩: 顶部保持可读, 向下渐隐为透明, 不会出现硬边/分割线.
+ */
+fun Modifier.gkTopScrim(color: Color, heightFraction: Float = 1f): Modifier = this.drawBehind {
+    drawRect(
+        brush = Brush.verticalGradient(
+            0f to color.copy(alpha = 0.92f),
+            0.65f * heightFraction to color.copy(alpha = 0.55f * heightFraction),
+            1f to Color.Transparent,
+        ),
+    )
+}
+
+/**
  * 玻璃风格下的配色: 把表面色系调成半透明.
  *
  * 卡片/列表/弹窗都用 surfaceContainer 系列作为容器色, 所以只改配色就能让整个应用
  * 的容器一起透出背景渐变, 不需要逐个组件改造. 文字色不动, 保证可读性.
  */
-fun glassColorScheme(base: androidx.compose.material3.ColorScheme): androidx.compose.material3.ColorScheme =
-    base.copy(
-        surface = base.surface.copy(alpha = 0.5f),
-        surfaceVariant = base.surfaceVariant.copy(alpha = 0.5f),
-        surfaceDim = base.surfaceDim.copy(alpha = 0.6f),
-        surfaceBright = base.surfaceBright.copy(alpha = 0.6f),
-        surfaceContainer = base.surfaceContainer.copy(alpha = 0.5f),
-        surfaceContainerLow = base.surfaceContainerLow.copy(alpha = 0.45f),
-        surfaceContainerLowest = base.surfaceContainerLowest.copy(alpha = 0.4f),
-        surfaceContainerHigh = base.surfaceContainerHigh.copy(alpha = 0.55f),
-        surfaceContainerHighest = base.surfaceContainerHighest.copy(alpha = 0.62f),
-    )
+fun glassColorScheme(base: ColorScheme): ColorScheme = base.copy(
+    surface = base.surface.copy(alpha = 0.5f),
+    surfaceVariant = base.surfaceVariant.copy(alpha = 0.5f),
+    surfaceDim = base.surfaceDim.copy(alpha = 0.6f),
+    surfaceBright = base.surfaceBright.copy(alpha = 0.6f),
+    surfaceContainer = base.surfaceContainer.copy(alpha = 0.5f),
+    surfaceContainerLow = base.surfaceContainerLow.copy(alpha = 0.45f),
+    surfaceContainerLowest = base.surfaceContainerLowest.copy(alpha = 0.4f),
+    surfaceContainerHigh = base.surfaceContainerHigh.copy(alpha = 0.55f),
+    surfaceContainerHighest = base.surfaceContainerHighest.copy(alpha = 0.62f),
+)
 
-/** 顶层玻璃容器: 记录环境渐变层, 并把风格注入整棵树. */
+/**
+ * 顶层玻璃容器: 记录环境渐变层, 并把风格/模糊系数/折射开关注入整棵树.
+ *
+ * 注意: 只有背景被录制进玻璃层, 玻璃表面本身不参与录制, 避免自折射.
+ */
 @Composable
 fun GkGlassRoot(
     style: UiStyle,
+    blurScale: Float,
+    liveRefraction: Boolean,
+    immersiveTopBar: Boolean,
     content: @Composable () -> Unit,
 ) {
     if (style != UiStyle.LiquidGlass) {
-        CompositionLocalProvider(LocalUiStyle provides style) { content() }
+        CompositionLocalProvider(
+            LocalUiStyle provides style,
+            LocalGkImmersiveTopBar provides immersiveTopBar,
+        ) {
+            content()
+        }
         return
     }
     val ambientBackdrop = rememberLayerBackdrop()
     CompositionLocalProvider(
         LocalUiStyle provides style,
         LocalGkAmbientBackdrop provides ambientBackdrop,
+        LocalGkBlurScale provides blurScale,
+        LocalGkLiveRefraction provides liveRefraction,
+        LocalGkImmersiveTopBar provides immersiveTopBar,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // 只有背景被录制进玻璃层, 玻璃表面本身不参与录制, 避免自折射
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -128,7 +190,8 @@ fun GkGlassRoot(
 /**
  * 环境渐变: 三个主题色光斑缓慢浮动.
  *
- * 玻璃本身是模糊, 没有可折射的内容就没有视觉效果, 所以这一层是玻璃风格的视觉基础.
+ * 玻璃本身是模糊, 没有可折射的内容就没有视觉效果, 所以这一层是玻璃风格的视觉基础
+ * (开启实时折射后, 顶栏/底栏改折页面真实内容, 这一层仍然作为卡片等表面的底).
  */
 @Composable
 fun GkGlassBackground() {

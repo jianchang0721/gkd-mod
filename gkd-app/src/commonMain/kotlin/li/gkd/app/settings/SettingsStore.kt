@@ -71,6 +71,12 @@ data class SettingsStore(
     val m3ColorSeed: Long = 0xFF6750A4L,
     val m3ColorVariant: Int = PaletteStyleOption.TonalSpot.value,
     val m3ColorContrast: Double = 0.0,
+    /** 玻璃实时折射: 顶栏/底栏折射滚动中的真实内容. */
+    val glassLiveRefraction: Boolean = true,
+    /** 玻璃模糊强度系数 (0.5x ~ 2x). */
+    val glassBlurScale: Float = 1f,
+    /** 顶栏沉浸: 透明 + 无分割线 (所有风格通用). */
+    val immersiveTopBar: Boolean = true,
     // endregion
 ) {
     val useA11y get() = automatorMode == AutomatorMode.A11y.value
