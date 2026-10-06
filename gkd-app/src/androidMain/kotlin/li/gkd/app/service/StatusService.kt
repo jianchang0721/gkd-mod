@@ -55,9 +55,9 @@ class StatusService : LifecycleHookService() {
             META.appName
         }
         return if (PermissionStates.appOpsRestrictedFlow.value) {
-            Triple(title, getString(Res.string.permission_restricted_reauthorize), "gkd://page/3")
+            Triple(title, getString(Res.string.permission_restricted_reauthorize), "gkdmod://page/3")
         } else if (privilegeServiceStatus == PrivilegeServiceStatus.DisconnectedDesired) {
-            Triple(title, getString(Res.string.privilege_service_connection_lost), "gkd://page/4")
+            Triple(title, getString(Res.string.privilege_service_connection_lost), "gkdmod://page/4")
         } else if (!automationRunning && !abRunning) {
             if (currentAppUseA11y) {
                 val text = if (a11yServiceEnabledFlow.value) {
@@ -88,7 +88,7 @@ class StatusService : LifecycleHookService() {
                 Triple(title, text, defaultStatusNotification.uri)
             }
         } else if (!store.enableMatch) {
-            Triple(title, getString(Res.string.rule_matching_pause), "gkd://page?tab=1")
+            Triple(title, getString(Res.string.rule_matching_pause), "gkdmod://page?tab=1")
         } else if (store.useCustomNotifText) {
             Triple(
                 title,

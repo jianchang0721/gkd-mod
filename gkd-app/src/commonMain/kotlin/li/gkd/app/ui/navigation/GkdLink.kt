@@ -9,9 +9,12 @@ sealed interface GkdLink {
     data object WeChatScanner : GkdLink
 
     companion object {
+        /** 官方 GKD 使用 gkd://, 修改版额外注册 gkdmod:// 以便与官方版共存时互不抢占. */
+        private val schemes = setOf("gkd", "gkdmod")
+
         fun parse(value: String): GkdLink? = runCatching {
             val uri = URI(value)
-            if (!uri.scheme.equals("gkd", ignoreCase = true)) null
+            if (uri.scheme?.lowercase() !in schemes) null
             else when (uri.host) {
                 "page" -> when (uri.path.orEmpty()) {
                     "" -> Home(

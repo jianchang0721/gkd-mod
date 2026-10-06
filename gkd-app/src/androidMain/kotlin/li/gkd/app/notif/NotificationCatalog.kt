@@ -113,7 +113,7 @@ object NotificationCatalog {
         key = ForegroundNotificationKey.Screenshot,
         title = Res.string.screenshot_capture_enabled.getSync(),
         text = Res.string.screenshot_capture_notification_description.getSync(),
-        uri = "gkd://page/1",
+        uri = "gkdmod://page/1",
         stopService = ScreenshotService::class,
     )
 
@@ -121,7 +121,7 @@ object NotificationCatalog {
         key = ForegroundNotificationKey.Button,
         title = Res.string.snapshot_button_enabled.getSync(),
         text = Res.string.snapshot_button_notification_description.getSync(),
-        uri = "gkd://page/1",
+        uri = "gkdmod://page/1",
         stopService = ButtonService::class,
     )
 
@@ -130,7 +130,7 @@ object NotificationCatalog {
         title = Res.string.http_service_enabled.getSync(),
         text = localNetworkIps.ifEmpty { listOf(Constants.loopbackHost) }
             .joinToString(", ") { "$it:$port" },
-        uri = "gkd://page/1",
+        uri = "gkdmod://page/1",
         stopService = HttpService::class,
     )
 
@@ -155,28 +155,28 @@ object NotificationCatalog {
             exportDetail?.let(::add)
             if (savedToDownloads) add(Res.string.saved_to_downloads.getSync())
         }.joinToString(separator = " · ").takeIf { it.isNotEmpty() },
-        uri = "gkd://page/2",
+        uri = "gkdmod://page/2",
     )
 
     fun activity(text: String? = null) = ForegroundNotification(
         key = ForegroundNotificationKey.Activity,
         title = Res.string.activity_info_showing.getSync(),
         text = text,
-        uri = "gkd://page/1",
+        uri = "gkdmod://page/1",
         stopService = ActivityService::class,
     )
 
     fun event() = ForegroundNotification(
         key = ForegroundNotificationKey.Event,
         title = Res.string.a11y_events_recording.getSync(),
-        uri = "gkd://page/1",
+        uri = "gkdmod://page/1",
         stopService = EventService::class,
     )
 
     fun track() = ForegroundNotification(
         key = ForegroundNotificationKey.Track,
         title = Res.string.track_overlay_enabled.getSync(),
-        uri = "gkd://page?tab=3",
+        uri = "gkdmod://page?tab=3",
         stopService = TrackService::class,
     )
 }
