@@ -7,7 +7,6 @@ import li.gkd.app.ui.option.AutomatorModeOption
 expect fun AppWindow.privilegeAvailable(): Boolean
 
 /** Root 辅助/无障碍保障只在 Android 上有意义. */
-@Composable
 expect fun AppWindow.rootAssistAvailable(): Boolean
 
 @Composable
